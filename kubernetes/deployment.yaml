@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bluesky-query-service
+  namespace: bluesky-query
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bluesky-query-service
+  template:
+    metadata:
+      labels:
+        app: bluesky-query-service
+    spec:
+      containers:
+        - name: query-service
+          image: ghcr.io/g-clef/bluesky-query-service:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: RAY_ADDRESS
+              value: "ray://ray-head-svc.ray.svc.cluster.local:10001"
+            - name: PARQUET_GLOB
+              value: "s3://bluesky-data/year=*/month=*/day=*/hour=*/*.parquet"
+            - name: S3_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: bluesky-query-minio-secret
+                  key: S3_ENDPOINT
+            - name: S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: bluesky-query-minio-secret
+                  key: S3_ACCESS_KEY
+            - name: S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: bluesky-query-minio-secret
+                  key: S3_SECRET_KEY
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10

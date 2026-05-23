@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bluesky-query-namespace
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/g-clef/bluesky-query-layer
+    targetRevision: HEAD
+    path: kubernetes
+    directory:
+      include: namespace.yaml
+      recurse: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: bluesky-query
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
