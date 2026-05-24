@@ -114,5 +114,5 @@ Sync waves: parent (-2) → namespace (-1) → service (0).
 ### Docker image
 
 ```
-ghcr.io/g-clef/bluesky-query-service:latest
+gclef/bluesky-query-service:latest
 ```
