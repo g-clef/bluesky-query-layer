@@ -86,7 +86,10 @@ class QueryRequest(BaseModel):
 @app.get("/health")
 async def health(actor: ActorProtocol = Depends(get_actor)) -> dict:
     loop = asyncio.get_running_loop()
-    reachable = await loop.run_in_executor(None, actor.ping)
+    try:
+        reachable = await loop.run_in_executor(None, actor.ping)
+    except asyncio.CancelledError:
+        raise HTTPException(status_code=503, detail="Actor unreachable")
     if not reachable:
         raise HTTPException(status_code=503, detail="Actor unreachable")
     return {"status": "ok"}

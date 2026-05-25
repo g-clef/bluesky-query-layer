@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: query-service
-          image: gclef/bluesky-query-service:0.0.9
+          image: gclef/bluesky-query-service:0.0.10
           ports:
             - containerPort: 8000
           env:
@@ -51,9 +51,11 @@ spec:
               port: 8000
             initialDelaySeconds: 30
             periodSeconds: 30
+            timeoutSeconds: 10
           readinessProbe:
             httpGet:
               path: /health
               port: 8000
             initialDelaySeconds: 15
             periodSeconds: 10
+            timeoutSeconds: 10
