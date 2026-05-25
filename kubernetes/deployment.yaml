@@ -20,7 +20,7 @@ spec:
             - containerPort: 8000
           env:
             - name: RAY_ADDRESS
-              value: "ray://ray-head-svc.ray.svc.cluster.local:10001"
+              value: "ray://homelab-ray-head-svc.ray.svc.cluster.local:10001"
             - name: PARQUET_GLOB
               value: "s3://bluesky-data/year=*/month=*/day=*/hour=*/*.parquet"
             - name: S3_ENDPOINT
