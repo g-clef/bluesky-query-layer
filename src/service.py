@@ -1,5 +1,6 @@
 # src/service.py
 import asyncio
+import logging
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -8,6 +9,8 @@ from typing import Any, Protocol
 import ray
 from fastapi import Depends, FastAPI, HTTPException, Request
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
 
 from src.actor import DuckDBQueryActor
 from src.exceptions import QueryError, QueryTimeoutError, S3Error
@@ -34,7 +37,8 @@ class ActorProxy:
     def ping(self) -> bool:
         try:
             return ray.get(self._actor.ping.remote(), timeout=5)
-        except Exception:
+        except Exception as e:
+            logger.error("Actor ping failed: %s: %s", type(e).__name__, e)
             return False
 
 
