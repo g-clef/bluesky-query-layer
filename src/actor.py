@@ -6,7 +6,7 @@ import ray
 from src.exceptions import QueryError, QueryTimeoutError, S3Error
 
 
-@ray.remote(runtime_env={"pip": ["duckdb>=1.0.0", "pyarrow>=15.0.0"]})
+@ray.remote
 class DuckDBQueryActor:
     def __init__(self, parquet_glob: str | None = None) -> None:
         self.conn = duckdb.connect()
