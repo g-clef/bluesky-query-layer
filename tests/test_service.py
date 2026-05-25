@@ -223,5 +223,8 @@ def test_lifespan_actor_creation_uses_get_if_exists(monkeypatch):
         asyncio.run(run())
 
         mock_options.assert_called_once_with(
-            name="duckdb_query_actor", lifetime="detached", get_if_exists=True
+            name="duckdb_query_actor",
+            namespace="bluesky-query",
+            lifetime="detached",
+            get_if_exists=True,
         )

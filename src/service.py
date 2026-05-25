@@ -66,7 +66,10 @@ async def lifespan(app: FastAPI):
             },
         )
         remote_actor = DuckDBQueryActor.options(
-            name="duckdb_query_actor", lifetime="detached", get_if_exists=True
+            name="duckdb_query_actor",
+            namespace="bluesky-query",
+            lifetime="detached",
+            get_if_exists=True,
         ).remote()
         _actor = ActorProxy(remote_actor)
     yield
