@@ -12,6 +12,11 @@ class DuckDBQueryActor:
         self.conn = duckdb.connect()
 
         s3_endpoint = os.environ.get("S3_ENDPOINT", "")
+        # DuckDB s3_endpoint expects host[:port] only, no scheme.
+        for scheme in ("https://", "http://"):
+            if s3_endpoint.startswith(scheme):
+                s3_endpoint = s3_endpoint[len(scheme):]
+                break
         if s3_endpoint:
             if "'" in s3_endpoint:
                 raise S3Error("S3_ENDPOINT must not contain single quotes")
