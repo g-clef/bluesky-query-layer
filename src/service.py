@@ -28,9 +28,9 @@ class ActorProxy:
 
     def query(self, sql: str) -> list[dict]:
         try:
-            return ray.get(self._actor.query.remote(sql), timeout=60)
+            return ray.get(self._actor.query.remote(sql), timeout=300)
         except ray.exceptions.GetTimeoutError as e:
-            raise QueryTimeoutError("Query exceeded 60s timeout") from e
+            raise QueryTimeoutError("Query exceeded 300s timeout") from e
         except ray.exceptions.RayTaskError as e:
             raise e.cause
 

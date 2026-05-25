@@ -43,7 +43,7 @@ def client_400():
 @pytest.fixture
 def client_408():
     app.dependency_overrides[get_actor] = lambda: MockProxy(
-        raise_exc=QueryTimeoutError("Query exceeded 60s timeout")
+        raise_exc=QueryTimeoutError("Query exceeded 300s timeout")
     )
     with TestClient(app) as c:
         yield c
