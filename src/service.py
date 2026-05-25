@@ -2,6 +2,7 @@
 import asyncio
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Any, Protocol
 
 import ray
@@ -45,10 +46,14 @@ async def lifespan(app: FastAPI):
     global _actor
     ray_address = os.environ.get("RAY_ADDRESS")
     if ray_address:
+        app_dir = str(Path(__file__).parent.parent)
         ray.init(
             address=ray_address,
             ignore_reinit_error=True,
-            runtime_env={"pip": ["duckdb>=1.0.0", "pyarrow>=15.0.0"]},
+            runtime_env={
+                "working_dir": app_dir,
+                "pip": ["duckdb>=1.0.0", "pyarrow>=15.0.0"],
+            },
         )
         remote_actor = DuckDBQueryActor.options(
             name="duckdb_query_actor", lifetime="detached", get_if_exists=True
