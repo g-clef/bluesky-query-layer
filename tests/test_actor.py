@@ -137,6 +137,29 @@ def test_actor_proxy_reraises_query_error_not_ray_task_error(ray_local, fixture_
         proxy.query("NOT VALID SQL AT ALL")
 
 
+def test_init_does_not_create_view_eagerly():
+    """__init__ must complete without executing CREATE VIEW — deferred to first query."""
+    import os
+    from unittest.mock import patch, MagicMock
+
+    glob = "s3://bluesky-data/year=*/month=*/day=*/hour=*/*.parquet"
+    env = {"S3_ENDPOINT": "minio.example.com", "S3_ACCESS_KEY": "k", "S3_SECRET_KEY": "s"}
+
+    ActorClass = DuckDBQueryActor.__ray_actor_class__
+
+    mock_conn = MagicMock()
+    executed_sql = []
+    mock_conn.execute.side_effect = lambda sql, *a, **kw: executed_sql.append(sql)
+
+    with patch.dict(os.environ, env):
+        with patch("src.actor.duckdb.connect", return_value=mock_conn):
+            instance = ActorClass.__new__(ActorClass)
+            ActorClass.__init__(instance, parquet_glob=glob)
+
+    create_view_calls = [s for s in executed_sql if "CREATE" in s.upper() and "VIEW" in s.upper()]
+    assert create_view_calls == [], f"__init__ must not call CREATE VIEW but got: {create_view_calls}"
+
+
 def test_httpfs_install_failure_propagates_as_s3error(fixture_parquet_dir):
     """A non-'already-installed' duckdb.Error during INSTALL httpfs must propagate, not be silenced."""
     import os
@@ -148,13 +171,11 @@ def test_httpfs_install_failure_propagates_as_s3error(fixture_parquet_dir):
 
     ActorClass = DuckDBQueryActor.__ray_actor_class__
 
-    call_count = [0]
-
     def execute_side_effect(sql, *a, **kw):
+        if "LOAD" in sql and "httpfs" in sql.lower():
+            raise duckdb.Error("httpfs not found")
         if "INSTALL" in sql:
-            call_count[0] += 1
-            if call_count[0] == 1:
-                raise duckdb.IOException("Network unreachable")
+            raise duckdb.IOException("Network unreachable")
 
     mock_conn = MagicMock()
     mock_conn.execute.side_effect = execute_side_effect

@@ -55,10 +55,8 @@ class DuckDBQueryActor:
             raise ValueError(
                 "parquet_glob must not contain single quotes"
             )
-        self.conn.execute(
-            f"CREATE OR REPLACE VIEW posts AS "
-            f"SELECT * FROM read_parquet('{glob}', hive_partitioning=true)"
-        )
+        self._glob = glob
+        self._view_ready = False
 
     def query(self, sql: str) -> list[dict]:
         stripped = sql.lstrip().lower()
@@ -69,6 +67,12 @@ class DuckDBQueryActor:
         ):
             raise QueryError("Only SELECT queries are allowed")
         try:
+            if not self._view_ready:
+                self.conn.execute(
+                    f"CREATE OR REPLACE VIEW posts AS "
+                    f"SELECT * FROM read_parquet('{self._glob}', hive_partitioning=true)"
+                )
+                self._view_ready = True
             result = self.conn.execute(sql)
             cols = [d[0] for d in result.description]
             return [dict(zip(cols, row)) for row in result.fetchall()]
