@@ -16,7 +16,7 @@ class DuckDBQueryActor:
             if "'" in s3_endpoint:
                 raise S3Error("S3_ENDPOINT must not contain single quotes")
             try:
-                self.conn.execute("INSTALL httpfs IF NOT EXISTS;")
+                self.conn.execute("INSTALL httpfs;")
             except duckdb.Error as e:
                 if "already" not in str(e).lower():
                     raise S3Error(f"Failed to install httpfs extension: {e}") from e
