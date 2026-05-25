@@ -47,12 +47,18 @@ async def lifespan(app: FastAPI):
     ray_address = os.environ.get("RAY_ADDRESS")
     if ray_address:
         app_dir = str(Path(__file__).parent.parent)
+        env_vars = {
+            k: os.environ[k]
+            for k in ("S3_ENDPOINT", "S3_ACCESS_KEY", "S3_SECRET_KEY", "PARQUET_GLOB")
+            if k in os.environ
+        }
         ray.init(
             address=ray_address,
             ignore_reinit_error=True,
             runtime_env={
                 "working_dir": app_dir,
                 "pip": ["duckdb>=1.0.0", "pyarrow>=15.0.0"],
+                "env_vars": env_vars,
             },
         )
         remote_actor = DuckDBQueryActor.options(
