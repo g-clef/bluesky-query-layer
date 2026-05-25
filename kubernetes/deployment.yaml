@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: query-service
-          image: gclef/bluesky-query-service:0.0.2
+          image: gclef/bluesky-query-service:0.0.3
           ports:
             - containerPort: 8000
           env:
