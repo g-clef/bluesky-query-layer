@@ -160,6 +160,14 @@ def test_init_does_not_create_view_eagerly():
     assert create_view_calls == [], f"__init__ must not call CREATE VIEW but got: {create_view_calls}"
 
 
+def test_actor_has_max_concurrency_gt_1():
+    """Actor must allow concurrent tasks so ping() can respond while query() runs."""
+    options = DuckDBQueryActor._default_options
+    assert options.get("max_concurrency", 1) >= 2, (
+        "max_concurrency must be >= 2 so health-check pings are not blocked by long-running queries"
+    )
+
+
 def test_httpfs_install_failure_propagates_as_s3error(fixture_parquet_dir):
     """A non-'already-installed' duckdb.Error during INSTALL httpfs must propagate, not be silenced."""
     import os
